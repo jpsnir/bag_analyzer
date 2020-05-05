@@ -1,0 +1,15 @@
+image_topics:
+- /cam/cam0
+
+camera_topics:
+- /imu/imu
+
+image_scale_factor:
+- 1
+- 2
+data: 'bag'
+optical_flow_type: dense
+
+bagfile: /home/jagat/datasets/vio_rosbags/
+
+
