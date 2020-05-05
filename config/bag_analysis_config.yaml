@@ -1,15 +1,13 @@
+#datasource: bag # set bag for rosbags or folder of
 image_topics:
-- /cam/cam0
-
+    - /cam/cam0 #if datasource != 0, set null
 camera_topics:
-- /imu/imu
-
+    - /imu/imu  #if datasource != 0, set null
+#- folder: null
+    
 image_scale_factor:
 - 1
 - 2
-data: 'bag'
 optical_flow_type: dense
-
-bagfile: /home/jagat/datasets/vio_rosbags/
 
 

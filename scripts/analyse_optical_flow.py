@@ -10,9 +10,10 @@ import rospy
 from matplotlib import pyplot as plt
 import numpy as np
 import cv2 as cv
-import logging as lg
+import logging
 import rosbag
 import argparse
+import yaml
 
 class BagAnalyser:
     '''
@@ -22,13 +23,13 @@ class BagAnalyser:
     -
     '''
     def __init__(self,bag_path,):
-        lg.debug('Initialise');
+        logger.debug('Initialise');
         self.bag = None
         self.optical_flow_figure = None 
         self.imu_motion_figure = None 
         self.optical_flow_data = None
         self.imu_data = None
-        self.image_size = np.array([2,1]) 
+        self.image_sizes = [] 
         
     def analyse_optical_flow(self,category=None,):
         '''
@@ -40,17 +41,17 @@ class BagAnalyser:
         Outputs:
             returns the optical flow data and plots it as well
         '''
-        lg.debug('Optical Flow analysis started')
+        logger.debug('Optical Flow analysis started')
         if category == 'dense':
-            lg.debug('Dense optical flow')
-            dense_optical_flow()
+            logger.debug('Dense optical flow')
+            self.dense_optical_flow()
         elif category == 'sparse':
-            lg.debug('Sparse optical flow')
+            logger.debug('Sparse optical flow')
         
     def analyse_imu(se):
-        lg.debug(' analysis started')
+        logger.debug(' analysis started')
         
-    def dense_optical_flow():
+    def dense_optical_flow(self):
         cap = cv.VideoCapture(cv.samples.findFile("vtest.avi"))
         ret, frame1 = cap.read()
         prvs = cv.cvtColor(frame1,cv.COLOR_BGR2GRAY)
@@ -74,4 +75,22 @@ class BagAnalyser:
             prvs = next
                 
 if name=='__main__':
+    rospy.init_node('bag_analyzer',anonymous=True,log_level=rospy.INFO)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(0)
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     description='Reads a rosbag containing different sensors data (IMU and                                                                     camera). For images only, just add the folder of images.\n \n')
+                                     
+    parser.add_argument('-i','--input', help='Input rosbag file to input', required=True)
+    parser.add_argument('-c','--config_file', help='Yaml file which specifies the image and imu topics',default = 'config/bag_analysis_config.yaml')
+    args = parser.parse_args()   
+    with open(args.config_file,'r') as f:
+        config = yaml.safe_load(f)
+    logger.info('Details of config file \n')
+    ba = BagAnalyser(args.input)
+    for key in config.keys():
+        logger.info(key+':'+str(config[key]))
+    input('\n Press Enter to continue')
+    
+    
     
