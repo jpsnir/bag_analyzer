@@ -73,24 +73,32 @@ class BagAnalyser:
                 cv.imwrite('opticalfb.png',frame2)
                 cv.imwrite('opticalhsv.png',bgr)
             prvs = next
+            
                 
-if name=='__main__':
-    rospy.init_node('bag_analyzer',anonymous=True,log_level=rospy.INFO)
-    logger = logging.getLogger(__name__)
-    logger.setLevel(0)
+if __name__=='__main__':
+    
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description='Reads a rosbag containing different sensors data (IMU and                                                                     camera). For images only, just add the folder of images.\n \n')
                                      
     parser.add_argument('-i','--input', help='Input rosbag file to input', required=True)
-    parser.add_argument('-c','--config_file', help='Yaml file which specifies the image and imu topics',default = 'config/bag_analysis_config.yaml')
+    parser.add_argument('-c','--config_file', help='Yaml file which specifies the image and imu topics',default = '../config/bag_analysis_config.yaml')
+    parser.add_argument('-log','--loglevel',help='defines the log level',default=logging.INFO)
     args = parser.parse_args()   
+    
+    
+    rospy.init_node('bag_analyzer',anonymous=True,log_level=rospy.INFO)
+    logger = logging.getLogger('Bag Analyser')
+    logger.setLevel(logging.INFO)
+    sh = logging.StreamHandler()
+    sh.setLevel(logging.INFO)
     with open(args.config_file,'r') as f:
         config = yaml.safe_load(f)
     logger.info('Details of config file \n')
-    ba = BagAnalyser(args.input)
     for key in config.keys():
-        logger.info(key+':'+str(config[key]))
-    input('\n Press Enter to continue')
+        print(key+':'+str(config[key]))
+    raw_input('\n Press Enter to continue')
+    ba = BagAnalyser(args.input)
     
+  
     
     
