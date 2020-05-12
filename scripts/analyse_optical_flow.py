@@ -22,8 +22,9 @@ class BagAnalyser:
     - Motion analysis from IMU
     -
     '''
-    def __init__(self,bag_path,):
-        logger.debug('Initialise');
+    def __init__(self,bag_path):
+        self.logger = None
+        self.node = rospy.init_node(name,anonymous=True,log_level=rospy.INFO)
         self.bag = None
         self.optical_flow_figure = None 
         self.imu_motion_figure = None 
@@ -73,31 +74,78 @@ class BagAnalyser:
                 cv.imwrite('opticalfb.png',frame2)
                 cv.imwrite('opticalhsv.png',bgr)
             prvs = next
-            
-                
-if __name__=='__main__':
     
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     description='Reads a rosbag containing different sensors data (IMU and                                                                     camera). For images only, just add the folder of images.\n \n')
-                                     
-    parser.add_argument('-i','--input', help='Input rosbag file to input', required=True)
-    parser.add_argument('-c','--config_file', help='Yaml file which specifies the image and imu topics',default = '../config/bag_analysis_config.yaml')
-    parser.add_argument('-log','--loglevel',help='defines the log level',default=logging.INFO)
-    args = parser.parse_args()   
-    
-    
-    rospy.init_node('bag_analyzer',anonymous=True,log_level=rospy.INFO)
-    logger = logging.getLogger('Bag Analyser')
+def configure_logger(name):
+    logger = logging.getLogger(name)
+    formatter = logging.Formatter('%(asctime)s - \
+                                  %(name)s -\
+                                  %(levelname)s -\
+                                  %(message)s')
     logger.setLevel(logging.INFO)
+    
+    # Console logger
     sh = logging.StreamHandler()
     sh.setLevel(logging.INFO)
+    
+    # file logger
+    fh = logging.FileHandler()
+    fh.setLevel(logging.INFO)
+    
+    # set formatter for both 
+    fh.setFormatter(formatter)
+    sh.setFormatter(formatter)
+    
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(sh)
+    
+    return logger
+    
+def configure_argument_parser():
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     description='Reads a rosbag containing\
+                                     different sensors data(IMU and camera).\
+                                     For images only, just add the folder of\
+                                     images.\n \n')
+                                     
+    parser.add_argument('-i',
+                        '--input', 
+                        help='Input rosbag file to input',
+                        default='/home/jagat/datasets/ \
+                        vio_rosbags/euroc_datasets/MH_05.bag')
+    
+    parser.add_argument('-c',
+                        '--config_file', 
+                        help='Yaml file which specifies\
+                        the image and imu topics',
+                        default = '../config/bag_analysis_config.yaml')
+    
+    parser.add_argument('-log',
+                        '--loglevel',
+                        help='defines the log level',
+                        default=logging.INFO)     
+    return parser
+
+def load_yaml_file(filename, config=None):
     with open(args.config_file,'r') as f:
         config = yaml.safe_load(f)
-    logger.info('Details of config file \n')
+        return config
+
+if __name__=='__main__':
+    parser = configure_argument_parser()
+    args = parser.parse_args()
+    name = 'Bag_analyzer'
+    # Initialise ros nodes
+    config_parameters = load_yaml_file(args.config)
+    ba = BagAnalyser(args.input)
+    ba.logger = configure_logger(name)  
+    
+    
+    ba.logger.info('Details of config file \n')
     for key in config.keys():
         print(key+':'+str(config[key]))
     raw_input('\n Press Enter to continue')
-    ba = BagAnalyser(args.input)
+    
     
   
     
